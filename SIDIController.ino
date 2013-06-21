@@ -315,8 +315,8 @@ void voiceFrequency(word raw){
 		
 		}
 		active->octaveShift =  val;
-		sid.setFrequency( active->id, lookup.lookup( active->frequency + (12 * active->octaveShift)) );
-
+		sid.setFrequency( active->id, lookup.lookup( active->note + (12 * active->octaveShift)) );
+		
 #ifdef debug
 		Serial.print("oct shift ");
 		Serial.print(active->id, DEC);
@@ -331,21 +331,20 @@ void voiceFrequency(word raw){
 
 
 void (*handlers[14])(word) = { 
-	toggleLP,
-	toggleHP,
-	toggleKeyboardOn,
-	filterFrequency,
-	filterResonance,
-	voicePW,
 	voiceFrequency,
-	setActiveVoice,
-	modeSelect,
-	setAttack,
-	setDecay,
-	setSustain,
+	voicePW,
+	filterResonance,
+	filterFrequency,
+	toggleKeyboardOn,
+	toggleHP,
+	toggleLP,
+	toggleFilter,
 	setRelease,
-	toggleFilter
-
+	setSustain,
+	setDecay,
+	setAttack,
+	modeSelect,
+	setActiveVoice
 };
 
 void handleNoteOn(byte channel, byte pitch, byte velocity){
@@ -421,6 +420,7 @@ void setup()
 	TIMSK1 |= (1 << OCIE1A);
   
 	sei();
+	
 
 	sid.reset();
 	sid.volume(15);
