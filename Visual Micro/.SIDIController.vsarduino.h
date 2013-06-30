@@ -42,6 +42,7 @@ void voicePW(word raw);
 void voiceFrequency(word raw);
 void handleNoteOn(byte channel, byte pitch, byte velocity);
 void handleNoteOff(byte channel, byte pitch, byte velocity);
+void handlePitchBend(byte channel, byte pitch, byte velocity);
 //
 //
 
