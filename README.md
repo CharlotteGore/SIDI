@@ -7,7 +7,7 @@ It also uses the [SIDFreak - MIDI note to SID Frequency lookup](https://github.c
 
 ##Progress
 
-Right now I have a basic but working control surface for controlling the SID. It exposes all the registers, plus a little bit extra (octave shifting, switching between keyboard control and a frequency knob etc). Enough to actually make music on SIDs but not enough to truly bring out the full power of it. A couple of 4051 demux chips, a bunch of pots, some toggle switches with pull-up resistors and a timer interrupt vector to do period reading. Classic "My First MIDI Controller" stuff except with some nasty PORT manipulation stuff for fun.
+Right now I have a basic but working control surface for controlling the SID. It exposes all the registers, plus a little bit extra (octave shifting, switching between keyboard control and a frequency knob etc). Enough to actually make music on SIDs but not enough to truly bring out the full power of it. A couple of 4051 demux chips, a bunch of pots, some toggle switches with pull-up resistors and a timer interrupt vector to do periodic reading. Classic "My First MIDI Controller" stuff except with some nasty PORT manipulation stuff for fun.
 
 Using standard analog potentiometers has proven to be a bit disappointing though, all in all. Keeping a track of what's what when you switch between the voices is incredibly difficult, jarring jumps etc.. total lack of repeatability of sounds. Hmmm.. is that a bad thing though? Probably is. Yes. 
 
