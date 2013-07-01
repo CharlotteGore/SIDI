@@ -10486,6 +10486,7 @@ high speed (Philips)</description>
 <part name="P+8" library="supply1" deviceset="VCC" device=""/>
 <part name="GND7" library="supply1" deviceset="GND" device=""/>
 <part name="P+9" library="supply1" deviceset="VCC" device=""/>
+<part name="P+10" library="supply1" deviceset="VCC" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -10535,6 +10536,7 @@ high speed (Philips)</description>
 <instance part="P+8" gate="VCC" x="-12.7" y="76.2" rot="R90"/>
 <instance part="GND7" gate="1" x="10.16" y="38.1"/>
 <instance part="P+9" gate="VCC" x="17.78" y="38.1" rot="R180"/>
+<instance part="P+10" gate="VCC" x="-5.08" y="91.44"/>
 </instances>
 <busses>
 </busses>
@@ -10568,19 +10570,6 @@ high speed (Philips)</description>
 </segment>
 </net>
 <net name="GND" class="0">
-<segment>
-<pinref part="R1" gate="G$1" pin="1"/>
-<pinref part="GND1" gate="1" pin="GND"/>
-<wire x1="0" y1="86.36" x2="-2.54" y2="86.36" width="0.1524" layer="91"/>
-<pinref part="S1" gate="1" pin="P1"/>
-<wire x1="-2.54" y1="86.36" x2="-10.16" y2="86.36" width="0.1524" layer="91"/>
-<wire x1="5.08" y1="93.98" x2="-2.54" y2="93.98" width="0.1524" layer="91"/>
-<wire x1="-2.54" y1="93.98" x2="-2.54" y2="86.36" width="0.1524" layer="91"/>
-<junction x="-2.54" y="86.36"/>
-<pinref part="S1" gate="1" pin="P"/>
-<wire x1="5.08" y1="96.52" x2="5.08" y2="93.98" width="0.1524" layer="91"/>
-<junction x="5.08" y="93.98"/>
-</segment>
 <segment>
 <pinref part="POWER" gate="G$1" pin="2"/>
 <wire x1="86.36" y1="99.06" x2="76.2" y2="99.06" width="0.1524" layer="91"/>
@@ -10640,6 +10629,15 @@ high speed (Philips)</description>
 <wire x1="10.16" y1="43.18" x2="10.16" y2="40.64" width="0.1524" layer="91"/>
 <pinref part="GND7" gate="1" pin="GND"/>
 </segment>
+<segment>
+<pinref part="S1" gate="1" pin="P1"/>
+<pinref part="S1" gate="1" pin="P"/>
+<wire x1="5.08" y1="96.52" x2="5.08" y2="93.98" width="0.1524" layer="91"/>
+<junction x="5.08" y="93.98"/>
+<pinref part="GND1" gate="1" pin="GND"/>
+<wire x1="5.08" y1="93.98" x2="-10.16" y2="93.98" width="0.1524" layer="91"/>
+<wire x1="-10.16" y1="93.98" x2="-10.16" y2="86.36" width="0.1524" layer="91"/>
+</segment>
 </net>
 <net name="VCC" class="0">
 <segment>
@@ -10696,6 +10694,12 @@ high speed (Philips)</description>
 <wire x1="17.78" y1="50.8" x2="17.78" y2="40.64" width="0.1524" layer="91"/>
 <junction x="17.78" y="50.8"/>
 <pinref part="P+9" gate="VCC" pin="VCC"/>
+</segment>
+<segment>
+<pinref part="P+10" gate="VCC" pin="VCC"/>
+<wire x1="-5.08" y1="88.9" x2="-5.08" y2="86.36" width="0.1524" layer="91"/>
+<pinref part="R1" gate="G$1" pin="1"/>
+<wire x1="-5.08" y1="86.36" x2="0" y2="86.36" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$5" class="0">
