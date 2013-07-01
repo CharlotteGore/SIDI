@@ -13,7 +13,7 @@ Note that this board is for the future version of SIDI, which uses I2C periphera
 
 ![Schematic](https://raw.github.com/CharlotteGore/SIDI/master/SIDI_I2C.png)
 
-*Actually it doesn't work. The RESET pin on the ATMega328P is pulled to ground instead of +5v. Whoops. Easily fixed - don't solder the 10k pullup resistor to the ground pad, connect it with a wire to a 5v contact.. but... agh.
+*Actually the version I sent off to the printers don't work. The RESET pin on the ATMega328P is pulled to ground instead of +5v. Whoops. The schematic and board files have been updated in this repo, but it's Manual Bodge time when the boards arrive..
 
 ##Progress
 
