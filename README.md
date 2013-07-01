@@ -9,9 +9,11 @@ It also uses the [SIDFreak - MIDI note to SID Frequency lookup](https://github.c
 
 Have added EAGLE files for the board. This is the other half of the board that's in the MOS6581 library. It holds the 1mhz crystal, an ATMega328P, exposes I2C, ICSP and SID_DATA headers and has a MIDI-In on the UART. This needs programming via ICSP, as the RX pin is being used by the MIDI input.
 
-Note that this board is for the future version of SIDI, which uses I2C peripherals for control data... and it's not back from the PCB printers yet so I don't know whether or not it works. FUN TIMES.
+Note that this board is for the future version of SIDI, which uses I2C peripherals for control data... and it's not back from the PCB printers yet so I don't know whether or not it works*. FUN TIMES.
 
 ![Schematic](https://raw.github.com/CharlotteGore/SIDI/master/SIDI_I2C.png)
+
+*Actually it doesn't work. The RESET pin on the ATMega328P is pulled to ground instead of +5v. Whoops. Easily fixed - don't solder the 10k pullup resistor to the ground pad, connect it with a wire to a 5v contact.. but... agh.
 
 ##Progress
 
