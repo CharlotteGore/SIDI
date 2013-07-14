@@ -1,3 +1,5 @@
+ #include <SoftwareSerial.h>
+
 #include <SPI.h>
 
 
@@ -10,7 +12,38 @@
 MOS6581 sid = MOS6581();
 SIDFreak lookup = SIDFreak();
 
-//#define debug;
+volatile byte raw_serial;
+// #define debug;
+
+void print_binary(int v, int num_places)
+{
+    int mask=0, n;
+
+    for (n=1; n<=num_places; n++)
+    {
+        mask = (mask << 1) | 0x0001;
+    }
+    v = v & mask;  // truncate v to specified number of places
+
+    while(num_places)
+    {
+
+        if (v & (0x0001 << num_places-1))
+        {
+             Serial.print("1");
+        }
+        else
+        {
+             Serial.print("0");
+        }
+
+        --num_places;
+        if(((num_places%4) == 0) && (num_places != 0))
+        {
+            Serial.print("_");
+        }
+    }
+}
 
 float bends[128] = {
 	0.49999999766807524,
@@ -158,6 +191,7 @@ struct Voice {
 	// for midi
 	byte note;
 	int8_t octaveShift;
+        int notesOn;
 };
 
 float globalBend = 1;
@@ -174,8 +208,10 @@ struct MIDI {
 	byte control;
 	byte data;
 	byte value;
+        byte channel;
 	boolean waitingForData;
 	boolean waitingForValue;
+        boolean waitingForControlCode;
 };
 
 struct MIDI signal;
@@ -196,6 +232,10 @@ byte modes[7] = {0, SID_SQUARE, SID_RAMP,SID_TRIANGLE,SID_NOISE, SID_RING, SID_S
 
 
 word inputs[14];
+
+//#ifdef debug
+//SoftwareSerial midiIn(8, 9);
+//#endif
 
 
 void setActiveVoice(word raw){
@@ -484,38 +524,43 @@ void (*handlers[14])(word) = {
 };
 
 void handleNoteOn(byte channel, byte pitch, byte velocity){
+  
+    
 	
-	for(int i = 0; i < 3; i++){
-		if(voices[i].kbd!=true && voices[i].on == 1){
-			sid.setVoice(i, false);
-			voices[i].note = pitch;
-			sid.setFrequency(i, (lookup.lookup(pitch + (12 * voices[i].octaveShift)) * globalBend ) );
-			sid.setVoice(i, true);
-		}
-	}
+	//for(int i = 0; i < 3; i++){
+		//if(voices[channel].kbd!=true && voices[channel].on == 1){
+			sid.setVoice(channel, false);
+			voices[channel].note = pitch;
+			sid.setFrequency(channel, (lookup.lookup(pitch + (12 * voices[channel].octaveShift)) * globalBend ) );
+			sid.setVoice(channel, true);
+                        voices[channel].notesOn++;
+		//}
+	//}
+
 		
 };
 
 void handleNoteOff(byte channel, byte pitch, byte velocity){
 
+        voices[channel].notesOn--;
+        
+        if(voices[channel].notesOn == 0){
+          
+    	       if(voices[channel].note == pitch){
+			sid.setVoice(channel, false);
+	       }
+        }
 
-	for(int i = 0; i < 3; i++){
-		if(voices[i].kbd!=true && voices[i].on == true){
-			if(voices[i].note == pitch){
-				sid.setVoice(i, false);
-			}
-		}
-	}
 }
 
 void handlePitchBend(byte channel, byte pitch, byte velocity){
 	globalBend = bends[velocity];	
 
-	for(int i = 0; i < 3; i++){
-		if(voices[i].kbd == false){
-			sid.setFrequency(i, (lookup.lookup( voices[i].note + (12 * voices[i].octaveShift)) * globalBend) );
+	//for(int i = 0; i < 3; i++){
+		if(voices[channel].kbd == false){
+			sid.setFrequency(channel, (lookup.lookup( voices[channel].note + (12 * voices[channel].octaveShift)) * globalBend) );
 		}		
-	}
+	//}
 }
 
 byte j;
@@ -538,34 +583,35 @@ void setup()
 		voices[i].kbd = false;
 		voices[i].note = 0;
 		voices[i].octaveShift = 0;
+                voices[i].notesOn = 0;
 	}
 
   
-	DDRD = DDRD | B11100000;  
+	//DDRD = DDRD | B11100000;  
 	// get initial state
   
-	for(byte i = 0; i < 7; i++){
-		PORTD &= B00011111;
-		PORTD |= i << 5;
-      
-		inputs[i] = analogRead(0);
-		inputs[i + 7] = analogRead(1);
-
-	}
+	//for(byte i = 0; i < 7; i++){
+	//	PORTD &= B00011111;
+	//	PORTD |= i << 5;
+      //
+	//	inputs[i] = analogRead(0);
+	//	inputs[i + 7] = analogRead(1);
+//
+	//}
   
   
-	cli();
+	//cli();
   
-	TCCR1A = 0;
-	TCCR1B = 0;
-	TCNT1 = 0;
+	//TCCR1A = 0;
+	//TCCR1B = 0;
+	//TCNT1 = 0;
   
-	OCR1A = 15624;
-	TCCR1B |=(1 << WGM12);
-	TCCR1B |=(1 << CS11) | (1 << CS10);
-	TIMSK1 |= (1 << OCIE1A);
+	//OCR1A = 15624;
+	//TCCR1B |=(1 << WGM12);
+	//TCCR1B |=(1 << CS11) | (1 << CS10);
+	//TIMSK1 |= (1 << OCIE1A);
   
-	sei();
+	//sei();
 	
 
 	sid.reset();
@@ -583,74 +629,88 @@ void setup()
         sid.setMode(0,SID_SQUARE);
         voices[0].on = true;
         
-        voices[1].mode = SID_SQUARE;
-        sid.setMode(1,SID_SQUARE);
+        voices[1].mode = SID_RAMP;
+        sid.setMode(1,SID_RAMP);
         voices[1].on = true;
+        
+        voices[2].mode = SID_TRIANGLE;
+        sid.setMode(2,SID_TRIANGLE);
+        voices[2].on = true;
         //handleNoteOn(0,40,127);
 
-#ifndef debug
+//#ifndef debug
 	Serial.begin(31250);
-#endif
+//#endif
 
-#ifdef debug
-	Serial.begin(115200);
-#endif
+//#ifdef debug
+       // midiIn.begin(31250);
+	//Serial.begin(115200);
+//#endif
 
   
 }
 
-void loop()
-{
-	byte raw_serial;
- if(Serial.available() > 0){
-	//if(Serial.available() > 0){
-		raw_serial = Serial.read();
-		//incomingByte = Serial.read();
-
-		if((raw_serial & B10000000) == B10000000){
-
-			signal.control = raw_serial;
-			signal.waitingForData = true;
-			signal.waitingForValue = true;
+void serialEvent(){
+  
+  while(Serial.available()){
+  
+  raw_serial = Serial.read();
    
-		}else if(signal.waitingForData == true){
+   if((raw_serial & B10000000) == B10000000){
+     // is a control signal
+     signal.control = (raw_serial & B11110000) >> 4;
+     signal.channel = (raw_serial & B00001111);
+     
+     signal.waitingForData = true;
+     signal.waitingForValue = true;
+     signal.waitingForControlCode = false;
+     
+   }else if(signal.waitingForData == true){
+     
+      signal.data =  raw_serial;
+      signal.waitingForData = false;
+      signal.waitingForControlCode = false;
+      
+   }else if(signal.waitingForValue == true){
+     
+     signal.value = raw_serial;
+     
+			if(signal.control == 0x9){
 
-			signal.data = raw_serial;
-			signal.waitingForData = false;
+			        handleNoteOn(signal.channel, signal.data, signal.value);
 
-			if(signal.control==128){
-				handleNoteOff(0, signal.data, 0);
+       
+
 			}
 
-		}else if(signal.waitingForValue == true){
+			if(signal.control == 0x8){
+				handleNoteOff(signal.channel, signal.data, 0);
 
-			signal.value = raw_serial;
-    
-			if(signal.control == 144){
+          
 
-				handleNoteOn(0, signal.data, signal.value);
-
-			}
-    
-			if(signal.control == 128){
-				handleNoteOff(0, signal.data, 0);
 				
 			}
 
-			if(signal.control == 224){
-				handlePitchBend(0, 0, signal.value);
+			if(signal.control == 0xE){
+				handlePitchBend(signal.channel, 0, signal.value);
 			}
-    
-		}
 
-	
-	}
+      
+     
+       signal.waitingForValue = false;
+       signal.waitingForControlCode == true;
+     
+   }
+  }
 
 }
 
+void loop()
+{
+	
 
-
-
+}
+/*
 ISR(TIMER1_COMPA_vect){
  
     for(byte i = 0; i < 7; i++){
@@ -682,14 +742,10 @@ ISR(TIMER1_COMPA_vect){
      }
 
 	}
-#ifdef debug
-	Serial.print(active->id, DEC);
-	Serial.print(" ");
-	Serial.print(active->mode, DEC);
-	Serial.print(" ");
-	Serial.println(active->on,DEC);
-#endif
+
 }
+
+*/
 
 
  
